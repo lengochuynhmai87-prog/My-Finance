@@ -1,0 +1,38 @@
+@model LearnMVC.Models.User
+
+<form asp-controller="Account"
+      asp-action="Update"
+      method="post">
+
+    @Html.AntiForgeryToken()
+
+    <div class="mb-3">
+        <label class="form-label">Họ và tên</label>
+        <input name="fullName"
+               value="@Model.FullName"
+               class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Email</label>
+        <input type="email"
+               name="email"
+               value="@Model.Email"
+               class="form-control"
+               required />
+
+        @Html.ValidationMessage(
+            "Email",
+            null,
+            new { @class = "text-danger small" }
+        )
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+        Lưu thay đổi
+    </button>
+
+    <button type="button" id="cancelButton" class="btn btn-light">
+        Hủy
+    </button>
+</form>

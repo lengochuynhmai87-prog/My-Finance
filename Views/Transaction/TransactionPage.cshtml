@@ -1,0 +1,466 @@
+@using System.Globalization
+@{
+    ViewData["Title"] = "Giao dịch";
+}
+@{
+    var currentBalance = ((decimal)(ViewBag.CurrentBalance ?? 0m)) .ToString("N0");
+    var moneyFormat = CultureInfo.GetCultureInfo("vi-VN");
+    var initialBalance = ViewBag.InitialBalance;
+    var transactions =
+        ViewBag.Transactions as List<Transaction>
+        ?? new List<Transaction>();
+}
+<div class="container-fluid px-4 py-4">
+    <!-- Tiêu đề trang -->
+    <div class="mb-4">
+        <h2 class="fw-bold text-dark mb-1">Giao dịch</h2>
+        <p class="text-muted mb-0">Quản lý các khoản thu chi và số dư của bạn.</p>
+    </div>
+
+    <!-- Hàng thẻ thông tin (Số dư & Thu trong tháng) -->
+    <div class="row g-4 mb-4">
+        <!-- Thẻ Số dư hiện tại -->
+        <div class="col-md-6">
+    <div class="card border border-light-subtle shadow-sm rounded-4 p-4 bg-white h-100 d-flex flex-column justify-content-between">
+        <div>
+            <div class="d-flex align-items-center mb-3 text-primary">
+                <i class="bi bi-wallet2 fs-4 me-2"></i>
+            </div>
+            <span class="text-muted fs-6">Số dư hiện tại</span>
+            <h3 class="fw-bold text-dark mt-1 mb-0">
+                    @currentBalance đ
+            </h3>
+        </div>
+        
+        <!-- Phần hiển thị số dư ban đầu nhỏ gọn ở chân card -->
+        <div class="mt-4 pt-3 border-top border-light d-flex justify-content-between align-items-center">
+            <span class="text-muted small">
+                <i class="bi bi-piggy-bank me-1"></i> Số dư ban đầu
+            </span>
+            <span class="fw-semibold text-dark small">
+                @(initialBalance != null
+                ? Convert.ToDecimal(initialBalance).ToString("N0", moneyFormat) + " đ"
+                : "Chưa thiết lập")
+            </span>
+        </div>
+    </div>
+</div>  
+
+        <!-- Thẻ Thu trong tháng -->
+        <div class="col-md-6">
+            <div class="card border border-light-subtle shadow-sm rounded-4 p-4 bg-white h-100">
+                <div class="d-flex align-items-center mb-3 text-success">
+                    <i class="bi bi-graph-up-arrow fs-4 me-2"></i>
+                </div>
+                <span class="text-muted fs-6">Thu trong tháng</span>
+                <h3 class="fw-bold text-success mt-1 mb-0">
+                @(((decimal)ViewBag.TotalIncome).ToString("N0")) đ
+                </h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hàng nút bấm hành động -->
+    <div class="row g-4">
+        <!-- Nút Nhập số dư ban đầu -->
+        <div class="col-md-6">
+            <button type="button" class="btn btn-outline-primary w-100 rounded-4 py-3 d-flex align-items-center justify-content-center fw-semibold shadow-sm bg-white" data-bs-toggle="modal" data-bs-target="#balanceModal">
+                <i class="bi bi-wallet2 fs-5 me-2"></i> Nhập số dư ban đầu
+            </button>
+        </div>
+
+        <!-- Nút Thêm giao dịch -->
+        <div class="col-md-6">
+            <button type="button" class="btn btn-primary w-100 rounded-4 py-3 d-flex align-items-center justify-content-center fw-semibold shadow-sm text-white" data-bs-toggle="modal" data-bs-target="#transactionModal">
+                <i class="bi bi-plus-circle fs-5 me-2"></i> Thêm giao dịch
+            </button>
+        </div>
+    </div>
+
+
+    <div class="modal fade" id="balanceModal" tabindex="-1"
+     aria-labelledby="balanceModalLabel" aria-hidden="true">
+
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow">
+
+            <!-- Tiêu đề Modal -->
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold" id="balanceModalLabel">
+                    <i class="bi bi-wallet2 text-primary me-2"></i>
+                    Nhập số dư ban đầu
+                </h5>
+
+                <button type="button" class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Đóng"></button>
+            </div>
+
+            <!-- Nội dung nhập liệu -->
+            <div class="modal-body p-4">
+
+                <p class="text-muted small mb-4">
+                    Nhập số tiền hiện có trong ví của bạn khi bắt đầu
+                    sử dụng My Finance.
+                </p>
+                <form asp-controller="Transaction"
+                    asp-action="SetBalance"
+                    method="post">
+
+                    <label for="amount">Số dư ban đầu</label>
+
+                   <input type="text"
+                        id="amountDisplay"
+                        class="form-control form-control-lg rounded-3"
+                        name="amount"
+                        placeholder="Ví dụ: 20.000"
+                        inputmode="numeric"
+                        autocomplete="off"
+                        required/>
+
+                        <div class="d-flex justify-content-end gap-2 mt-4">
+                        <button type="button"
+                                class="btn btn-light rounded-3 px-3"
+                                data-bs-dismiss="modal">
+                            Hủy
+                        </button>
+
+                        <button type="submit"
+                                class="btn btn-primary rounded-3 px-4">
+                            <i class="bi bi-check2 me-1"></i>
+                            Lưu số dư
+                        </button>
+                    </div>                
+                </form>
+                <!-------Form nhập giao dịch -------->
+        </div>
+</div>
+</div>      
+</div>
+<!-- Modal thêm giao dịch -->
+<div class="modal fade" id="transactionModal" tabindex="-1"
+     aria-labelledby="transactionModalLabel" aria-hidden="true">
+
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title" id="transactionModalLabel">
+                    Thêm giao dịch
+                </h5>
+
+                <button type="button" class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Đóng"></button>
+            </div>
+
+            <div class="modal-body">
+
+                <form asp-controller="Transaction"
+                      asp-action="AddTransaction"
+                      method="post">
+
+                    <!-- 1. Phương thức thanh toán -->
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">
+                            Phương thức thanh toán
+                        </label>
+
+                        <div class="row g-2">
+
+                            <div class="col-4">
+                                <input type="radio"
+                                       class="btn-check"
+                                       name="PaymentMethod"
+                                       id="cash"
+                                       value="Cash"
+                                       checked />
+
+                                <label class="btn btn-outline-primary w-100"
+                                       for="cash">
+                                    <i class="bi bi-wallet2 d-block fs-4"></i>
+                                    <small>Tiền mặt</small>
+                                </label>
+                            </div>
+
+                            <div class="col-4">
+                                <input type="radio"
+                                       class="btn-check"
+                                       name="PaymentMethod"
+                                       id="bankTransfer"
+                                       value="BankTransfer" />
+
+                                <label class="btn btn-outline-primary w-100"
+                                       for="bankTransfer">
+                                    <i class="bi bi-bank d-block fs-4"></i>
+                                    <small>Chuyển khoản</small>
+                                </label>
+                            </div>
+
+                            <div class="col-4">
+                                <input type="radio"
+                                       class="btn-check"
+                                       name="PaymentMethod"
+                                       id="eWallet"
+                                       value="EWallet" />
+
+                                <label class="btn btn-outline-primary w-100"
+                                       for="eWallet">
+                                    <i class="bi bi-phone d-block fs-4"></i>
+                                    <small>Ví điện tử</small>
+                                </label>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- 2. Loại giao dịch -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">
+                            Loại giao dịch
+                        </label>
+
+                        <div class="row g-2">
+
+                            <div class="col-6">
+                                <input type="radio"
+                                       class="btn-check"
+                                       name="Type"
+                                       id="expense"
+                                       value="Expense"
+                                       checked />
+
+                                <label class="btn btn-outline-danger w-100"
+                                       for="expense">
+                                    <i class="bi bi-arrow-up-circle me-1"></i>
+                                    Khoản chi
+                                </label>
+                            </div>
+
+                            <div class="col-6">
+                                <input type="radio"
+                                       class="btn-check"
+                                       name="Type"
+                                       id="income"
+                                       value="Income" />
+
+                                <label class="btn btn-outline-success w-100"
+                                       for="income">
+                                    <i class="bi bi-arrow-down-circle me-1"></i>
+                                    Khoản thu
+                                </label>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- 3. Số tiền -->
+                    <div class="mb-3">
+                        <label for="transactionAmount"
+                               class="form-label fw-semibold">
+                            Số tiền (VNĐ)
+                        </label>
+
+                        <input type="number"
+                               class="form-control"
+                               id="transactionAmount"
+                               name="Amount"
+                               placeholder="Nhập số tiền"
+                               min="1"
+                               step="1"
+                               required />
+                    </div>
+
+                    <!-- 4. Danh mục -->
+                    <div class="mb-3">
+                        <label for="transactionCategory"
+                               class="form-label fw-semibold">
+                            Danh mục
+                        </label>
+
+                        <select class="form-select"
+                                id="transactionCategory"
+                                name="Catalogue"
+                                required>
+
+                            <option value="Food">Ăn uống</option>
+                            <option value="Transport">Di chuyển</option>
+                            <option value="Education">Học tập</option>
+                            <option value="Shopping">Mua sắm</option>
+                            <option value="OtherExpense">Khác</option>
+
+                        </select>
+                    </div>
+
+                    <!-- 5. Ngày giao dịch -->
+                    <div class="mb-3">
+                        <label for="transactionDate"
+                               class="form-label fw-semibold">
+                            Ngày giao dịch
+                        </label>
+
+                        <input type="date"
+                               class="form-control"
+                               id="transactionDate"
+                               name="DateTime"
+                               value="@DateTime.Today.ToString("yyyy-MM-dd")"
+                               required />
+                    </div>
+
+                    <!-- 6. Ghi chú -->
+                    <div class="mb-3">
+                        <label for="transactionNote"
+                               class="form-label fw-semibold">
+                            Ghi chú
+                        </label>
+
+                        <textarea class="form-control"
+                                  id="transactionNote"
+                                  name="Note"
+                                  rows="2"
+                                  maxlength="255"
+                                  placeholder="Nhập ghi chú (không bắt buộc)"></textarea>
+                    </div>
+
+                    <!-- Nút thao tác -->
+                    <div class="d-flex justify-content-end gap-2 mt-4">
+                        <button type="button"
+                                class="btn btn-secondary"
+                                data-bs-dismiss="modal">
+                            Hủy
+                        </button>
+
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg me-1"></i>
+                            Lưu giao dịch
+                        </button>
+                    </div>
+
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Danh sách giao dịch -->
+<div class="card border-0 shadow-sm rounded-4 mt-4">
+    <div class="card-body p-4">
+        <h5 class="fw-bold mb-4">Lịch sử giao dịch</h5>
+
+        @if (transactions.Count == 0)
+        {
+            <div class="text-center text-muted py-5">
+                <i class="bi bi-receipt fs-1 d-block mb-3"></i>
+                <p class="mb-0">Chưa có giao dịch nào.</p>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Ngày</th>
+                            <th>Danh mục</th>
+                            <th>Phương Thức</th>
+                            <th>Ghi chú</th>
+                            <th>Loại</th>
+                            <th class="text-end">Số tiền</th>
+                            <th class="text-center">Thao tác</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var item in transactions)
+                        {
+                            <tr>
+                                <td>
+                                    @item.DateTime.ToString("dd/MM/yyyy")
+                                </td>
+
+                                <td>
+                                    @(item.Catalogue ?? "Chưa phân loại")
+                                </td>
+                                
+                                <td>
+                                    @switch (item.Method)
+                                    {
+                                        case "Cash":
+                                            <span><i class="bi bi-wallet2 me-1"></i> Tiền mặt</span>
+                                            break;
+
+                                        case "BankTransfer":
+                                            <span><i class="bi bi-bank me-1"></i> Chuyển khoản</span>
+                                            break;
+
+                                        case "EWallet":
+                                            <span><i class="bi bi-phone me-1"></i> Ví điện tử</span>
+                                            break;
+
+                                        default:
+                                            <span class="text-muted">Chưa xác định</span>
+                                            break;
+                                    }
+                                </td>
+
+                                <td>
+                                    @(string.IsNullOrWhiteSpace(item.Note)
+                                        ? "—"
+                                        : item.Note)
+                                </td>
+
+                                <td>
+                                    @if (item.Type == "Income")
+                                    {
+                                        <span class="badge text-bg-success">
+                                            Khoản thu
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge text-bg-danger">
+                                            Khoản chi
+                                        </span>
+                                    }
+                                </td>
+
+                                <td class="text-end fw-semibold">
+                                    <span class="@(item.Type == "Income"
+                                        ? "text-success"
+                                        : "text-danger")">
+                                        @(item.Type == "Income" ? "+" : "-")
+                                        @item.Amount.ToString("N0", moneyFormat)
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <a asp-controller="Transaction"
+                                    asp-action="EditTransaction"
+                                    asp-route-id="@item.Id"
+                                    class="btn btn-sm btn-outline-primary">
+                                        Sửa
+                                    </a>
+
+                                    <form asp-controller="Transaction"
+                                        asp-action="DeleteTransaction"
+                                        asp-route-id="@item.Id"
+                                        method="post"
+                                        class="d-inline">
+                                        @Html.AntiForgeryToken()
+
+                                        <button type="submit"
+                                                class="btn btn-sm btn-outline-danger"
+                                                onclick="return confirm('Bạn có chắc muốn xóa giao dịch này?')">
+                                            Xóa
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
+

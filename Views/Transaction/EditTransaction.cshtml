@@ -1,0 +1,69 @@
+
+@model LearnMVC.Models.Transaction
+
+@{
+    ViewData["Title"] = "Sửa giao dịch";
+}
+
+<div class="container mt-4">
+    <h2>Sửa giao dịch</h2>
+
+    <form asp-controller="Transaction"
+          asp-action="EditTransaction"
+          asp-route-id="@Model.Id"
+          method="post">
+
+        @Html.AntiForgeryToken()
+
+        <input type="hidden" asp-for="Id" />
+
+        <div class="mb-3">
+            <label asp-for="Amount" class="form-label">Số tiền</label>
+            <input asp-for="Amount" type="number"
+                   class="form-control" min="1" step="1" required />
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Type" class="form-label">Loại giao dịch</label>
+            <select asp-for="Type" class="form-select" required>
+                <option value="Expense">Khoản chi</option>
+                <option value="Income">Khoản thu</option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Method" class="form-label">Hình thức</label>
+            <select asp-for="Method" class="form-select">
+                <option value="Cash">Tiền mặt</option>
+                <option value="BankTransfer">Chuyển khoản</option>
+                <option value="EWallet">Ví điện tử</option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Catalogue" class="form-label">Danh mục</label>
+            <input asp-for="Catalogue" class="form-control" />
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="DateTime" class="form-label">Ngày giao dịch</label>
+            <input asp-for="DateTime" type="datetime-local"
+                   asp-format="{0:yyyy-MM-ddTHH:mm}"
+                   class="form-control" required />
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Note" class="form-label">Ghi chú</label>
+            <textarea asp-for="Note" class="form-control"></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+            Lưu thay đổi
+        </button>
+
+        <a asp-action="TransactionPage"
+           class="btn btn-secondary">
+            Quay lại
+        </a>
+     </form>
+</div>

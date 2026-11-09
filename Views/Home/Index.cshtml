@@ -1,0 +1,383 @@
+﻿
+@using LearnMVC.Models
+@using System.Globalization
+
+@{
+    ViewData["Title"] = "Tổng quan";
+
+    var moneyFormat = CultureInfo.GetCultureInfo("vi-VN");
+
+    decimal currentBalance = ViewBag.CurrentBalance ?? 0m;
+    decimal totalIncome = ViewBag.TotalIncome ?? 0m;
+    decimal totalExpense = ViewBag.TotalExpense ?? 0m;
+
+    var recentTransactions =
+        ViewBag.RecentTransactions as List<Transaction>
+        ?? new List<Transaction>();
+}
+
+<div class="container-fluid px-4 py-4">
+
+    <!-- Tiêu đề -->
+    <div class="mb-4">
+        <h2 class="fw-bold mb-1">Tổng quan</h2>
+        <p class="text-muted mb-0">
+            Tình hình tài chính của bạn trong tháng
+            @DateTime.Today.ToString("MM/yyyy")
+        </p>
+    </div>
+
+    <!-- Thẻ tổng quan -->
+    <div class="row g-4 mb-4">
+
+        <!-- Số dư -->
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
+                <div class="d-flex justify-content-between">
+                    <span class="text-muted">Số dư hiện tại</span>
+                    <i class="bi bi-wallet2 fs-4 text-primary"></i>
+                </div>
+
+                <h3 class="fw-bold mt-3 mb-0">
+                    @currentBalance.ToString("N0", moneyFormat) đ
+                </h3>
+            </div>
+        </div>
+
+        <!-- Tổng thu -->
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
+                <div class="d-flex justify-content-between">
+                    <span class="text-muted">Tổng thu tháng này</span>
+                    <i class="bi bi-graph-up-arrow fs-4 text-success"></i>
+                </div>
+
+                <h3 class="fw-bold text-success mt-3 mb-0">
+                    +@totalIncome.ToString("N0", moneyFormat) đ
+                </h3>
+            </div>
+        </div>
+
+        <!-- Tổng chi -->
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
+                <div class="d-flex justify-content-between">
+                    <span class="text-muted">Tổng chi tháng này</span>
+                    <i class="bi bi-graph-down-arrow fs-4 text-danger"></i>
+                </div>
+
+                <h3 class="fw-bold text-danger mt-3 mb-0">
+                    -@ViewBag.TotalExpense.ToString("N0") đ
+                </h3>
+            </div>
+        </div>
+
+<!-- Bộ lọc thời gian -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+
+    <div>
+        <h5 class="fw-bold mb-1">Thống kê chi tiêu</h5>
+        <p class="text-muted mb-0 small">
+            Theo dõi tình hình thu chi của bạn
+        </p>
+    </div>
+
+    <div>
+        <select id="periodFilter" class="form-select rounded-3">
+    <option value="month" selected="@(ViewBag.Period == "month")">Tháng này</option>
+    <option value="week" selected="@(ViewBag.Period == "week")">Tuần này</option>
+    <option value="lastWeek" selected="@(ViewBag.Period == "lastWeek")">Tuần trước</option>
+    <option value="lastMonth" selected="@(ViewBag.Period == "lastMonth")">Tháng trước</option>
+    <option value="3months" selected="@(ViewBag.Period == "3months")">3 tháng gần nhất</option>
+    <option value="6months" selected="@(ViewBag.Period == "6months")">6 tháng gần nhất</option>
+    <option value="custom" selected="@(ViewBag.Period == "custom")">Tùy chỉnh ngày</option>
+</select>
+    </div>
+<!--Chọn ngày tùy chỉnh  -->
+</div>
+<div id="customDateFilter"
+     class="row g-3 mb-4"
+     style="display: none;">
+
+    <div class="col-md-4">
+        <label class="form-label">Từ ngày</label>
+        <input type="date"
+               id="startDate"
+               class="form-control rounded-3" 
+               value="@ViewBag.StartDate"/>
+    </div>
+
+    <div class="col-md-4">
+        <label class="form-label">Đến ngày</label>
+        <input type="date"
+               id="endDate"
+               class="form-control rounded-3"
+               value="@ViewBag.EndDate"/>
+    </div>
+
+    <div class="col-md-4 d-flex align-items-end">
+        <button type="button"
+                id="applyDateFilter"
+                class="btn btn-primary rounded-3 w-100">
+            <i class="bi bi-funnel me-1"></i>
+            Áp dụng
+        </button>
+    </div>
+
+</div>
+<script>
+    const periodFilter = document.getElementById('periodFilter');
+    const customDateFilter = document.getElementById('customDateFilter');
+    const currentPeriod = '@ViewBag.Period';
+
+    if (currentPeriod === 'custom') {
+        customDateFilter.style.display = 'flex';
+    }
+
+    periodFilter.addEventListener('change', function () {
+
+        if (this.value === 'custom') {
+            customDateFilter.style.display = 'flex';
+        } else {
+            window.location.href = '/?period=' + this.value;
+        }
+
+    });
+    const startDate = document.getElementById('startDate');
+    const endDate = document.getElementById('endDate');
+    const applyButton = document.getElementById('applyDateFilter');
+
+    applyButton.addEventListener('click', function () {
+
+        if (!startDate.value || !endDate.value) {
+            alert('Vui lòng chọn đầy đủ ngày.');
+            return;
+        }
+
+        if (startDate.value > endDate.value) {
+            alert('Ngày bắt đầu không được lớn hơn ngày kết thúc.');
+            return;
+        }
+
+        window.location.href =
+            '/?period=custom' +
+            '&startDate=' + startDate.value +
+            '&endDate=' + endDate.value;
+
+    });
+
+</script>
+
+<!-------------- -->
+    <div class="row g-4 mb-4">
+
+    <!-- Biểu đồ theo danh mục -->
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
+           <div class="mb-3">
+        <h5 class="fw-bold mb-1">By Category</h5>
+        <small class="text-muted">@ViewBag.FilterLabel</small>
+    </div>
+
+            <div style="max-width: 300px; height: 300px; margin: auto;">
+                <canvas id="categoryChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Biểu đồ thu chi theo tháng -->
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
+            <h5 class="fw-bold mb-3">Monthly Expenses</h5>
+
+            <div style="height: 300px;">
+                <canvas id="monthlyChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+</div>  
+
+
+
+    <!-- Giao dịch gần đây -->
+    <div class="card border-0 shadow-sm rounded-4 mt-4">
+        <div class="card-body p-4">
+
+            <div class="d-flex justify-content-between
+                        align-items-center mb-4">
+
+                <h5 class="fw-bold mb-0">
+                    Giao dịch gần đây
+                </h5>
+
+                <a asp-controller="Transaction"
+                   asp-action="TransactionPage"
+                   class="btn btn-outline-primary btn-sm rounded-3">
+                    Xem tất cả
+                    <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+            </div>
+
+            @if (recentTransactions.Count == 0)
+            {
+                <div class="text-center text-muted py-5">
+                    <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+                    <p class="mb-0">Chưa có giao dịch nào.</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Ngày</th>
+                                <th>Danh mục</th>
+                                <th>Phương thức</th>
+                                <th>Loại</th>
+                                <th class="text-end">Số tiền</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach (var item in recentTransactions)
+                            {
+                                <tr>
+                                    <td>
+                                        @item.DateTime.ToString("dd/MM/yyyy")
+                                    </td>
+
+                                    <td>
+                                        @(item.Catalogue ?? "Chưa phân loại")
+                                    </td>
+
+                                    <td>
+                                        @(item.Method switch
+                                        {
+                                            "Cash" => "Tiền mặt",
+                                            "BankTransfer" => "Chuyển khoản",
+                                            "EWallet" => "Ví điện tử",
+                                            _ => "Chưa xác định"
+                                        })
+                                    </td>
+
+                                    <td>
+                                        @if (item.Type == "Income")
+                                        {
+                                            <span class="badge text-bg-success">
+                                                Khoản thu
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge text-bg-danger">
+                                                Khoản chi
+                                            </span>
+                                        }
+                                    </td>
+
+                                    <td class="text-end fw-semibold
+                                        @(item.Type == "Income"
+                                            ? "text-success"
+                                            : "text-danger")">
+
+                                        @(item.Type == "Income" ? "+" : "-")
+                                        @item.Amount.ToString("N0", moneyFormat) đ
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+
+        </div>
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const categoryLabels = @Html.Raw(
+        System.Text.Json.JsonSerializer.Serialize(ViewBag.CategoryLabels)
+    );
+
+    const categoryValues = @Html.Raw(
+        System.Text.Json.JsonSerializer.Serialize(ViewBag.CategoryValues)
+    );
+
+    const ctx = document.getElementById('categoryChart');
+
+    if (categoryLabels.length > 0) {
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: categoryLabels,
+                datasets: [{
+                    data: categoryValues,
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    } else {
+        ctx.parentElement.innerHTML +=
+            '<p class="text-muted text-center mt-4">Chưa có dữ liệu chi tiêu.</p>';
+    }
+    const monthLabels = @Html.Raw(
+    System.Text.Json.JsonSerializer.Serialize(ViewBag.MonthLabels)
+);
+
+const monthIncome = @Html.Raw(
+    System.Text.Json.JsonSerializer.Serialize(ViewBag.MonthIncome)
+);
+
+const monthExpense = @Html.Raw(
+    System.Text.Json.JsonSerializer.Serialize(ViewBag.MonthExpense)
+);
+
+const monthlyCtx = document.getElementById('monthlyChart');
+
+new Chart(monthlyCtx, {
+    type: 'bar',
+    data: {
+        labels: monthLabels,
+        datasets: [
+            {
+                label: 'Thu nhập',
+                data: monthIncome,
+                backgroundColor: '#198754'
+            },
+            {
+                label: 'Chi tiêu',
+                data: monthExpense,
+                backgroundColor: '#dc3545'
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+</script> 
+              
